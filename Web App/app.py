@@ -5,247 +5,365 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from dash.dependencies import Input, Output, State
-# import numpy as np
 
-import plotly.graph_objs as go
 import dash_bootstrap_components as dbc
-import plotly.offline as py
-from ipywidgets.embed import embed_minimal_html
 
-from ipywidgets import interactive, HBox, VBox
-from ipywidgets import FloatSlider, IntSlider
+import skimage.io as sio
+from skimage.transform import rescale, resize, downscale_local_mean
+
+image = sio.imread("soccer_fieldv3.jpeg")
+img = image[:, :, 1]
+t2 = img[:, int(img.shape[1] / 2):]
+
+image_rescaled = rescale(t2, 0.25, anti_aliasing=False)
+image_resized = resize(image_rescaled, (92, 84), anti_aliasing=True)
+
+liverpool_def = pd.read_csv('Coefficients_Liverpool_Defense.csv')
+liverpool_off = pd.read_csv('Coefficients_Liverpool_Offense.csv')
+
+x = np.arange(0,60)
+y = np.arange(-45, 45)
+yt = np.array([[i] for i in y])
+z = x * yt
 
 layout = go.Layout(
-        scene=dict(
-            xaxis=dict(
-                nticks=8, range=[-10, 70], ),
-            yaxis=dict(
-                nticks=8, range=[-80, 80], ),
-            zaxis=dict(
-                nticks=9, range=[-60, 100], ), ))
+    scene=dict(
+        xaxis=dict(
+            nticks=6, range=[0,60], ),
+        yaxis=dict(
+            nticks=8, range=[-45, 45], ),
+        zaxis=dict(
+            nticks=12, range=[-120, 120], ), ),
+    # margin=dict(
+    #     t=0, # top margin: 30px, you want to leave around 30 pixels to
+    #           # display the modebar above the graph.
+    #     b=10, # bottom margin: 10px
+    #     l=20, # left margin: 10px
+    #     r=20, # right margin: 10px
+    # ),
+    margin=dict(
+        t=0,  # top margin: 30px, you want to leave around 30 pixels to
+        # display the modebar above the graph.
+        b=10,  # bottom margin: 10px
+        l=20,  # left margin: 10px
+        r=10,  # right margin: 10px
+    ),
+    width=600)
+
+layout2 = go.Layout(
+    scene=dict(
+        xaxis=dict(
+            nticks=6, range=[0, 60], ),
+        yaxis=dict(
+            nticks=8, range=[-45, 45], ),
+        zaxis=dict(
+            nticks=12, range=[-120, 120], ), ),
+    # margin=dict(
+    #     t=90, # top margin: 30px, you want to leave around 30 pixels to
+    #           # display the modebar above the graph.
+    #     b=0, # bottom margin: 10px
+    #     l=10, # left margin: 10px
+    #     r=10 # right margin: 10px
+    # ),
+    margin=dict(
+        t=90,  # top margin: 30px, you want to leave around 30 pixels to
+        # display the modebar above the graph.
+        b=10,  # bottom margin: 10px
+        l=10,  # left margin: 10px
+        r=10,  # right margin: 10px
+    ),
+    width=550,height=500)
+
+camera = dict(
+    eye=dict(x=1.75, y=1, z=0.4)
+)
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUMEN])
 server = app.server
 
 
-app.layout = html.Div(
-    [
-    dbc.Row([
-            dbc.Col(html.Div([
-                            html.Br(),
-                            html.Br(),
-                            html.Br(),
-                            html.Br(),
-                            html.Br(),
-                            dcc.Loading(id="loading-1",
-                                        children=[dcc.Graph(id='3D-graph', figure={})])]), md=7),
-            dbc.Col(html.Div([
-                    html.Br(),
-                    html.Br(),
-                    html.Br(),
-                    html.Br(),
-                    html.Br(),
-                    html.Label([html.Strong('a: '),
-                                #dcc.Input(id='a', type='number', step=0.1, value=0.5),
-                                dcc.Slider(
-                                        id='a',
-                                        min=-50,
-                                        max=50,
-                                        step=0.1,
-                                        value=0.5,
-                                    ),
-                                html.Div(id='slider-drag-output', style={'margin-top': -20,'margin-left':26})
-                                ]),
-                    html.Br(),
-                    html.Label([html.Strong('b: '),
-                                #dcc.Input(id='b', type='number', step=0.1, value=2.2)]),
-                                dcc.Slider(
-                                        id='b',
-                                        min=-50,
-                                        max=50,
-                                        step=0.1,
-                                        value=2.2,
-                                    ),
-                                html.Div(id='slider-drag-output2', style={'margin-top': -20,'margin-left':26})
-                                ]),
-                    html.Br(),
-                    html.Label([html.Strong('c: '),
-                                #dcc.Input(id='c', type='number', step=0.1, value=7.3),
-                                dcc.Slider(
-                                    id='c',
-                                    min=-50,
-                                    max=50,
-                                    step=0.1,
-                                    value=7.3,
-                                ),
-                                html.Div(id='slider-drag-output3', style={'margin-top': -20,'margin-left':26})
-                                ]),
-                    html.Br(),
-                    html.Label([html.Strong('d: '),
-                                #dcc.Input(id='d', type='number', step=0.1, value=3.8),
-                                dcc.Slider(
-                                    id='d',
-                                    min=-50,
-                                    max=50,
-                                    step=0.1,
-                                    value=3.8,
-                                ),
-                                html.Div(id='slider-drag-output4', style={'margin-top': -20,'margin-left':26})
-                                ]),
-                    html.Br(),
-                    html.Label([html.Strong('e: '),
-                                #dcc.Input(id='e', type='number', step=0.1, value=3.7),
-                                dcc.Slider(
-                                    id='e',
-                                    min=-50,
-                                    max=50,
-                                    step=0.1,
-                                    value=3.7,
-                                ),
-                                html.Div(id='slider-drag-output5', style={'margin-top': -20,'margin-left':26})
-                                ]),
-                    html.Br(),
-                    html.Label([html.Strong('f: '),
-                                #dcc.Input(id='f', type='number', step=0.1, value=12.2),
-                                dcc.Slider(
-                                    id='f',
-                                    min=-50,
-                                    max=50,
-                                    step=0.1,
-                                    value=12.2,
-                                ),
-                                html.Div(id='slider-drag-output6', style={'margin-top': -20,'margin-left':26})
-                                ]),
-                    html.Br(),
-                    html.Br(),
-                    html.Label(
-                        dbc.Button(id='my_button', n_clicks=0, children="Submit", color="success"),
-                        style={'font-weight': 'bold'}),
-                    html.Br()
-                ]), md=5)
-            ])
-    ])
+app.layout = html.Div(children=[
+    # All elements from the top of the page
+    html.Div([
+        html.Div([
+            dcc.Loading(id="loading-1",
+                        children=[dcc.Graph(id='3D-graph', figure={})]),
+        ], className='four columns'),
+        html.Div([
+            dcc.Loading(id="loading-2",
+                        children=[dcc.Graph(id='2D-graph', figure={})]),
+        ], className='four columns'),
+        html.Div([
+            html.Br(),
+            html.Br(),
+            html.Br(),
+            html.Br(),
+            html.Label([html.Strong('Minutes: '),
+                        # dcc.Input(id='a', type='number', step=0.1, value=0.5),
+                        dcc.Slider(
+                            id='minutes_def',
+                            min=0,
+                            max=90,
+                            step=1,
+                            value=5),
+                        html.Div(id='slider-drag-output',
+                                 style={'margin-top': -20, 'margin-left': 26, 'padding-right': '140px'})
+                        ]),
+            html.Br(),
+            html.Br(),
+            html.Label(
+                dbc.Button(id='my_button', n_clicks=0, children="Submit", color="success"),
+                style={'font-weight': 'bold'}),
+            html.Br()
+        ], className='four columns'),
+    ], className='row'),
+    html.Div([
+        html.Div([
+            dcc.Loading(id="loading-3",
+                        children=[dcc.Graph(id='3D-graph2', figure={})]),
+        ], className='four columns'),
+        html.Div([
+            dcc.Loading(id="loading-4",
+                        children=[dcc.Graph(id='2D-graph2', figure={})]),
+        ], className='four columns'),
+        html.Div([
+            html.Br(),
+            html.Br(),
+            html.Br(),
+            html.Br(),
+            html.Label([html.Strong('Minutes: '),
+                        # dcc.Input(id='a', type='number', step=0.1, value=0.5),
+                        dcc.Slider(
+                            id='minutes_def2',
+                            min=0,
+                            max=90,
+                            step=1,
+                            value=5),
+                        html.Div(id='slider-drag-output2',
+                                 style={'margin-top': -20, 'margin-left': 26, 'padding-right': '140px'})
+                        ]),
+            html.Br(),
+            html.Br(),
+            html.Label(
+                dbc.Button(id='my_button2', n_clicks=0, children="Submit", color="success"),
+                style={'font-weight': 'bold'}),
+            html.Br()
+        ], className='four columns'),
+    ], className='row'),
 
-    # html.Div([
-    #     dcc.Graph(
-    #         id='3D-graph',
-    #         figure={})]),
-    # html.Br(),
-    # html.Label(["a: ",
-    #             dcc.Input(id='a', type='number', step=0.1, value=0.5)]),
-    # html.Br(),
-    # html.Label(["b: ",
-    #             dcc.Input(id='b', type='number', step=0.1, value=2.2)]),
-    # html.Br(),
-    # html.Label(["c: ",
-    #             dcc.Input(id='c', type='number', step=0.1, value=7.3)]),
-    # html.Br(),
-    # html.Label(["d: ",
-    #             dcc.Input(id='d', type='number', step=0.1, value=3.8)]),
-    # html.Br(),
-    # html.Label(["e: ",
-    #             dcc.Input(id='e', type='number', step=0.1, value=3.7)]),
-    # html.Br(),
-    # html.Label(["f: ",
-    #             dcc.Input(id='f', type='number', step=0.1, value=12.3)]),
-    # html.Br(),
-    # html.Br(),
-    # html.Label(
-    #     dbc.Button(id='my_button', n_clicks=0, children="Submit", color="primary",
-    #                size="lg"),
-    #     style={'font-weight': 'bold'}),
-    # html.Br()], style={'text-align': 'center'})
+])
+
+# app.layout = html.Div(
+#     [
+#         dbc.Row([
+#             dbc.Col(html.Div([
+#                 dcc.Loading(id="loading-1",
+#                             children=[dcc.Graph(id='3D-graph', figure={})])])),
+#             dbc.Col(html.Div([
+#                 dcc.Loading(id="loading-2",
+#                             children=[dcc.Graph(id='2D-graph', figure={})])])),
+#             dbc.Col(html.Div([
+#                 html.Br(),
+#                 html.Br(),
+#                 html.Br(),
+#                 html.Br(),
+#                 html.Label([html.Strong('minutes: '),
+#                             # dcc.Input(id='a', type='number', step=0.1, value=0.5),
+#                             dcc.Slider(
+#                                 id='minutes_def',
+#                                 min=0,
+#                                 max=90,
+#                                 step=1,
+#                                 value=5),
+#                             html.Div(id='slider-drag-output',
+#                                      style={'margin-top': -20, 'margin-left': 26, 'padding-right': '140px'})
+#                             ]),
+#                 html.Br(),
+#                 html.Br(),
+#                 html.Label(
+#                     dbc.Button(id='my_button', n_clicks=0, children="Submit", color="success"),
+#                     style={'font-weight': 'bold'}),
+#                 html.Br()
+#             ]))
+#         ], align="start", no_gutters=True)
+#     ])
+
 
 @app.callback(Output('slider-drag-output', 'children'),
-              [Input('a', 'drag_value'), Input('a', 'value')])
-def display_value(drag_value, value):
-    return 'drag_value: {} | value: {}'.format(value, value)
+              [Input('minutes_def', 'value')])
+def display_value(value):
+    return 'Timestep: {} minutes'.format(value)
 
 @app.callback(Output('slider-drag-output2', 'children'),
-              [Input('b', 'drag_value'), Input('b', 'value')])
-def display_value(drag_value, value):
-    return 'drag_value: {} | value: {}'.format(value, value)
-
-@app.callback(Output('slider-drag-output3', 'children'),
-              [Input('c', 'drag_value'), Input('c', 'value')])
-def display_value(drag_value, value):
-    return 'drag_value: {} | value: {}'.format(value, value)
-
-@app.callback(Output('slider-drag-output4', 'children'),
-              [Input('d', 'drag_value'), Input('d', 'value')])
-def display_value(drag_value, value):
-    return 'drag_value: {} | value: {}'.format(value, value)
-
-@app.callback(Output('slider-drag-output5', 'children'),
-              [Input('e', 'drag_value'), Input('e', 'value')])
-def display_value(drag_value, value):
-    return 'drag_value: {} | value: {}'.format(value, value)
-
-@app.callback(Output('slider-drag-output6', 'children'),
-              [Input('f', 'drag_value'), Input('f', 'value')])
-def display_value(drag_value, value):
-    return 'drag_value: {} | value: {}'.format(value, value)
-
+              [Input('minutes_def2', 'value')])
+def display_value(value):
+    return 'Timestep: {} minutes'.format(value)
 
 @app.callback(
     Output(component_id='3D-graph', component_property='figure'),
     Input(component_id='my_button', component_property='n_clicks'),
-    [State(component_id='a', component_property='value'),
-     State(component_id='b', component_property='value'),
-     State(component_id='c', component_property='value'),
-     State(component_id='d', component_property='value'),
-     State(component_id='e', component_property='value'),
-     State(component_id='f', component_property='value')],
+    [State(component_id='minutes_def', component_property='value')],
     prevent_initial_call=False
 )
-def update_z(n_clicks, a, b, c, d, e, f):
+def update_3d(n_clicks, minutes_def):
     with np.errstate(divide='ignore', invalid='ignore'):
-        x = np.arange(-10, 70)
-        y = np.arange(-80, 80)
-        yt = np.array([[i] for i in y])
-        z = x * yt
-
-        # fig = go.Figure(
-        #     data=[
-        #         go.Contour(z=z, x=x, y=y, )],
-        #     layout=layout)
-
         fig = go.Figure(
-            data=[
-                go.Contour(z=z, showscale=True, connectgaps=True)],
+            data=[go.Surface(z=z, x=x, y=y, colorscale='blues', surfacecolor=np.zeros(90 * 80).reshape(90, 80)),
+                  go.Surface(x=x, y=y, z=np.zeros(7200).reshape(90, 80),
+                             surfacecolor=image_resized, colorscale='BuGn_r')],
             layout=layout)
 
-        camera = dict(
-            eye=dict(x=1.75, y=1, z=0.1)
-        )
-        otherback = -(e / (np.sqrt(((20 + x) / yt) ** 2 + (yt / 100) ** 2))) - \
-                    (f / (np.sqrt(((20 + x) / 10) ** 2 + (yt / 5) ** 2)))
+        row = liverpool_def.iloc[minutes_def]
 
-        quicktest2 = -(c / (np.sqrt(((100 - x) / (2 * yt)) ** 2 + ((40 - yt) / 20) ** 2))) - \
-                     (d / (np.sqrt(((100 - x) / (2 * yt)) ** 2 + ((40 + yt) / 20) ** 2)))
+        a = 1 / (np.sqrt((x + 0) ** 2 + (yt + 0) ** 2)) * row['a']
+        b = 1 / (np.sqrt((x - 30) ** 2 + (yt + 0) ** 2)) * row['b']
+        c = 1 / (np.sqrt((x - 60) ** 2 + (yt + 0) ** 2)) * row['c']
+        d = 1 / (np.sqrt((x - 15) ** 2 + (yt - 40) ** 2)) * row['d']
+        e = 1 / (np.sqrt((x - 45) ** 2 + (yt - 40) ** 2)) * row['e']
+        f = 1 / (np.sqrt((x - 15) ** 2 + (yt + 40) ** 2)) * row['f']
+        g = 1 / (np.sqrt((x - 45) ** 2 + (yt + 40) ** 2)) * row['g']
 
-        fronttest2 = -(5 * a / (np.sqrt(((70 - x) / 10) ** 2 + (yt / 7) ** 2))) - \
-                     (b / (np.sqrt(((70 - x) / yt) ** 2 + (yt / 10) ** 2)))
+        A = a + b + c + d + e + f + g
 
-        setupthree = fronttest2 + quicktest2 + otherback
+        A[A > 100] = 100
+        A[A < -100] = -100
 
-        fig.data[0].z = setupthree
+        fig.data[0].z = A
 
-        #fig.update_traces(showscale=False)
-        fig.update_layout(margin=dict(b=0, t=0))
+        fig.update_layout(scene_aspectmode='manual',
+                          scene_aspectratio=dict(x=1, y=1, z=1),
+                          scene_camera=camera)
 
-        fig.update_layout(scene_camera=camera)
+        fig.update_layout(title='Liverpool [F.C. Women] Defensive (3D Surface)', title_x = 0.08, title_y=0.925)
 
-        # fig.update_traces(contours_z=dict(show=True, usecolormap=True,
-        #                                   highlightcolor="limegreen", project_z=True))
-        # fig.update_layout(title='3D Surface Plot', autosize=False,
-        #                   scene_camera_eye=dict(x=1.87, y=0.88, z=-0.64),
-        #                   width=500, height=500,
-        #                   margin=dict(l=65, r=50, b=65, t=90))
+        #fig.update_layout(margin=dict(b=0, t=0))
+
+        fig.update_traces(showscale=False)
 
         return fig
 
+
+@app.callback(
+    Output(component_id='2D-graph', component_property='figure'),
+    Input(component_id='my_button', component_property='n_clicks'),
+    [State(component_id='minutes_def', component_property='value')],
+    prevent_initial_call=False
+)
+def update_2d(n_clicks, minutes_def):
+    with np.errstate(divide='ignore', invalid='ignore'):
+        fig2 = go.Figure(
+            data=[
+                go.Contour(z=z, showscale=True, connectgaps=True)],
+            layout=layout2)
+
+        row = liverpool_def.iloc[minutes_def]
+
+        a = 1 / (np.sqrt((x + 0) ** 2 + (yt + 0) ** 2)) * row['a']
+        b = 1 / (np.sqrt((x - 30) ** 2 + (yt + 0) ** 2)) * row['b']
+        c = 1 / (np.sqrt((x - 60) ** 2 + (yt + 0) ** 2)) * row['c']
+        d = 1 / (np.sqrt((x - 15) ** 2 + (yt - 40) ** 2)) * row['d']
+        e = 1 / (np.sqrt((x - 45) ** 2 + (yt - 40) ** 2)) * row['e']
+        f = 1 / (np.sqrt((x - 15) ** 2 + (yt + 40) ** 2)) * row['f']
+        g = 1 / (np.sqrt((x - 45) ** 2 + (yt + 40) ** 2)) * row['g']
+
+        A = a + b + c + d + e + f + g
+
+        A[A > 100] = 100
+        A[A < -100] = -100
+
+        #fig2.update_layout(margin=dict(b=0, t=0))
+
+        fig2.update_layout(title='Liverpool [F.C. Women] Defensive (2D Contour)')
+
+
+
+        fig2.data[0].z = A
+
+        return fig2
+
+
+@app.callback(
+    Output(component_id='3D-graph2', component_property='figure'),
+    Input(component_id='my_button2', component_property='n_clicks'),
+    [State(component_id='minutes_def2', component_property='value')],
+    prevent_initial_call=False
+)
+def update_3d2(n_clicks, minutes_def2):
+    with np.errstate(divide='ignore', invalid='ignore'):
+        fig = go.Figure(
+            data=[go.Surface(z=z, x=x, y=y, colorscale='blues', surfacecolor=np.zeros(90 * 80).reshape(90, 80)),
+                  go.Surface(x=x, y=y, z=np.zeros(7200).reshape(90, 80),
+                             surfacecolor=image_resized, colorscale='BuGn_r')],
+            layout=layout)
+
+        row = liverpool_off.iloc[minutes_def2]
+
+        a = 1 / (np.sqrt((x + 0) ** 2 + (yt + 0) ** 2)) * row['a']
+        b = 1 / (np.sqrt((x - 30) ** 2 + (yt + 0) ** 2)) * row['b']
+        c = 1 / (np.sqrt((x - 60) ** 2 + (yt + 0) ** 2)) * row['c']
+        d = 1 / (np.sqrt((x - 15) ** 2 + (yt - 40) ** 2)) * row['d']
+        e = 1 / (np.sqrt((x - 45) ** 2 + (yt - 40) ** 2)) * row['e']
+        f = 1 / (np.sqrt((x - 15) ** 2 + (yt + 40) ** 2)) * row['f']
+        g = 1 / (np.sqrt((x - 45) ** 2 + (yt + 40) ** 2)) * row['g']
+
+        A = a + b + c + d + e + f + g
+
+        A[A > 100] = 100
+        A[A < -100] = -100
+
+        fig.data[0].z = A
+
+        fig.update_layout(scene_aspectmode='manual',
+                          scene_aspectratio=dict(x=1, y=1, z=1),
+                          scene_camera=camera)
+
+        #fig.update_layout(margin=dict(b=0, t=0))
+
+        fig.update_layout(title='Liverpool [F.C. Women] Offensive (3D Surface)', title_x=0.08, title_y=0.925)
+
+        fig.update_traces(showscale=False)
+
+        return fig
+
+
+@app.callback(
+    Output(component_id='2D-graph2', component_property='figure'),
+    Input(component_id='my_button2', component_property='n_clicks'),
+    [State(component_id='minutes_def2', component_property='value')],
+    prevent_initial_call=False
+)
+def update_2d2(n_clicks, minutes_def2):
+    with np.errstate(divide='ignore', invalid='ignore'):
+        fig2 = go.Figure(
+            data=[
+                go.Contour(z=z, showscale=True, connectgaps=True)],
+            layout=layout2)
+
+        row = liverpool_off.iloc[minutes_def2]
+
+        a = 1 / (np.sqrt((x + 0) ** 2 + (yt + 0) ** 2)) * row['a']
+        b = 1 / (np.sqrt((x - 30) ** 2 + (yt + 0) ** 2)) * row['b']
+        c = 1 / (np.sqrt((x - 60) ** 2 + (yt + 0) ** 2)) * row['c']
+        d = 1 / (np.sqrt((x - 15) ** 2 + (yt - 40) ** 2)) * row['d']
+        e = 1 / (np.sqrt((x - 45) ** 2 + (yt - 40) ** 2)) * row['e']
+        f = 1 / (np.sqrt((x - 15) ** 2 + (yt + 40) ** 2)) * row['f']
+        g = 1 / (np.sqrt((x - 45) ** 2 + (yt + 40) ** 2)) * row['g']
+
+        A = a + b + c + d + e + f + g
+
+        A[A > 100] = 100
+        A[A < -100] = -100
+
+        #fig2.update_layout(margin=dict(b=0, t=0))
+        fig2.update_layout(title='Liverpool [F.C. Women] Offensive (2D Contour)')
+
+
+        fig2.data[0].z = A
+
+        return fig2
 
 if __name__ == '__main__':
     app.run_server(debug=True)
