@@ -1,6 +1,5 @@
 ---
 title: "Potential Functions and Soccer"
-subtitle: "Subtitle comes here"
 author: "Adhvaith, Sifan, Nick"
 date: "2021/07/15"
 output:
