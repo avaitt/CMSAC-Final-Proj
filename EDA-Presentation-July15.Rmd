@@ -37,9 +37,9 @@ rw <- readRDS("SifanData/rw")
 
 # Motivation
 
-- To find a way to work with the data that does not ignore the locations of the other players.
+- To encapsulate the complex movement of the ball into a much simpler, useful object
 
-- Expected Goals 
+- Given a location and other features, calculate expected Goals 
 
 - Who will win? And other spatial-related questions.
 
@@ -67,10 +67,12 @@ DT::datatable(head(predata), fillContainer = FALSE, options = list(pageLength = 
 
 
 --
+- Force vector field from a gravitational potential is conservative. 
 - $F = MA$
 
 
 --
+- The negative gradient (downwards direction) of the Potential function gives the vector field of forces 
 - $F = - \nabla V(x,y)$
 
 ---
@@ -78,11 +80,11 @@ DT::datatable(head(predata), fillContainer = FALSE, options = list(pageLength = 
 ## Our Potential Functions
 
 - Gravity
-$$ V(x,y) = -\frac{G}{\sqrt{x^2 + y^2}} $$
+$$ V(x,y) = -G\frac{1}{\sqrt{x^2 + y^2}} $$
 
 
 --
-- **NOT** "potential of scoring".
+- **NOT** "potential of scoring" => just underlying forces
 
 .pull-left[
 <img src="./NickPics/graph1.png" width = "450px"/>
