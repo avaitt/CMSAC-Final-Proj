@@ -234,15 +234,15 @@ https://cmsac-final-proj.herokuapp.com/
 ## Next Steps
 
 --
-- Take the Potential Functions of different teams (Offense and Defense)
-  - Overlay offensive potential function over defensive potential function  
+- Take the Potential Functions of different teams (offensive behavior and defensive behavior)
+  - Overlay offensive potential function over defensive potential function (across teams)  
   
   - Perform random walks (steps sampled from poisson dist.)
   
 <br>
 
 --
-- Detect Team Formation based on Potential Function Coefficients 
+- Look at team formation based on potential function coefficients 
 
 <br>
 
