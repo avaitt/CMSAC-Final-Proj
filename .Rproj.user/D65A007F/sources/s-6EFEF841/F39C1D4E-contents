@@ -37,9 +37,9 @@ rw <- readRDS("SifanData/rw")
 
 # Motivation
 
-- To encapsulate the complex movement of the ball into a much simpler, useful object
+- To find a way to work with the data that does not ignore the locations of the other players.
 
-- Given a location and other features, calculate expected Goals 
+- Expected Goals 
 
 - Who will win? And other spatial-related questions.
 
@@ -67,12 +67,10 @@ DT::datatable(head(predata), fillContainer = FALSE, options = list(pageLength = 
 
 
 --
-- Force vector field from a gravitational potential is conservative. 
 - $F = MA$
 
 
 --
-- The negative gradient (downwards direction) of the Potential function gives the vector field of forces 
 - $F = - \nabla V(x,y)$
 
 ---
@@ -80,11 +78,11 @@ DT::datatable(head(predata), fillContainer = FALSE, options = list(pageLength = 
 ## Our Potential Functions
 
 - Gravity
-$$ V(x,y) = -G\frac{1}{\sqrt{x^2 + y^2}} $$
+$$ V(x,y) = -\frac{G}{\sqrt{x^2 + y^2}} $$
 
 
 --
-- **NOT** "potential of scoring" => just underlying forces
+- **NOT** "potential of scoring".
 
 .pull-left[
 <img src="./NickPics/graph1.png" width = "450px"/>
@@ -235,16 +233,23 @@ https://cmsac-final-proj.herokuapp.com/
 
 ## Next Steps
 
-- Take the Potential Functions of different teams (Offense and Defense), overlay offense against defense,
-and then do random walks (steps sampled from poisson) to calculate probability of scoring.
+--
+- Take the Potential Functions of different teams (Offense and Defense)
+  - Overlay offensive potential function over defensive potential function  
+  
+  - perform random walks (steps sampled from poisson dist.)
+  
+  - Calculate probability of scoring to model expected goals
 
 <br>
 
-- Detect Formation based on Potential Function Coefficients
+--
+- Detect Team Formation based on Potential Function Coefficients 
 
 <br>
 
-- How the potential functions look for possessions leading to shots, success vs fails
+--
+- Look at how potential functions are shaped for possessions leading to shots, successful vs. failed goal attempts
 
 ---
 
