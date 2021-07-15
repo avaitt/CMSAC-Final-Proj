@@ -237,10 +237,8 @@ https://cmsac-final-proj.herokuapp.com/
 - Take the Potential Functions of different teams (Offense and Defense)
   - Overlay offensive potential function over defensive potential function  
   
-  - perform random walks (steps sampled from poisson dist.)
+  - Perform random walks (steps sampled from poisson dist.)
   
-  - Calculate probability of scoring to model expected goals
-
 <br>
 
 --
@@ -249,7 +247,7 @@ https://cmsac-final-proj.herokuapp.com/
 <br>
 
 --
-- Look at how potential functions are shaped for possessions leading to shots, successful vs. failed goal attempts
+- How do potential functions look for possessions leading to shots?
 
 ---
 
