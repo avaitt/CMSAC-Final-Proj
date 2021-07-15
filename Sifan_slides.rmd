@@ -1,0 +1,77 @@
+---
+title: "Title comes here"
+subtitle: "Subtitle comes here"
+author: "[Laurent Gatto](#laurent-gatto)"
+date: "2018/01/01"
+output:
+  xaringan::moon_reader:
+    css: ["default", "default-fonts", "my.css"]
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+
+
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(
+  fig.width=9, fig.height=3.5, fig.retina=3,
+  out.width = "100%",
+  cache = FALSE,
+  echo = TRUE,
+  message = FALSE, 
+  warning = FALSE,
+  fig.show = TRUE,
+  hiline = TRUE
+)
+
+library(tidyverse)
+library(SBpitch)
+
+predata <- readRDS("SifanData/predata")
+rw <- readRDS("SifanData/rw")
+
+```
+
+class: middle, center
+
+## Content
+
+---
+## [StasbombR Data](https://github.com/statsbomb/StatsBombR)
+```{r, echo=F}
+DT::datatable(head(predata), fillContainer = FALSE, options = list(pageLength = 6))
+```
+####Data provided by [Statsbomb](https://github.com/statsbomb/open-data)
+
+---
+## Random Walk
+
+A path that consists of a succession of some random steps on some mathematical space.
+
+- A point moves along the integer line
+
+--
+
+A random walk on the soccer filed
+
+
+```{r, echo=F}
+rw.test <- rw(3000, .5, .5)
+```
+
+---
+## Random Walk under Harmonic Potential Function
+Using potential function as a guidance for random walk
+
+--
+
+- A step by the random particle under a force.
+$$r(t_{i+1}) - r(t_i) = - \nabla V(r(t_i)) (t_{t+1} - t_i) + \sigma \sqrt{(t_{i+1} - t_i)} Z_{i+1}$$
+
+--
+<br>
+
+- Small_Change = Estimated_Velocity x TimeStep + Noise 

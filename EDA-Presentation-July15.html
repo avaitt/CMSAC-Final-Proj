@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Potential Functions and Soccer</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Adhvaith, Sifan, Nick" />
+    <script src="EDA-Presentation-July15_files/header-attrs/header-attrs.js"></script>
+    <link href="EDA-Presentation-July15_files/remark-css/default.css" rel="stylesheet" />
+    <link href="EDA-Presentation-July15_files/remark-css/default-fonts.css" rel="stylesheet" />
+    <script src="EDA-Presentation-July15_files/htmlwidgets/htmlwidgets.js"></script>
+    <script src="EDA-Presentation-July15_files/jquery/jquery.min.js"></script>
+    <link href="EDA-Presentation-July15_files/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+    <script src="EDA-Presentation-July15_files/datatables-binding/datatables.js"></script>
+    <link href="EDA-Presentation-July15_files/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="EDA-Presentation-July15_files/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+    <script src="EDA-Presentation-July15_files/dt-core/js/jquery.dataTables.min.js"></script>
+    <link href="EDA-Presentation-July15_files/crosstalk/css/crosstalk.css" rel="stylesheet" />
+    <script src="EDA-Presentation-July15_files/crosstalk/js/crosstalk.min.js"></script>
+    <link rel="stylesheet" href="my.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Potential Functions and Soccer
+## Subtitle comes here
+### Adhvaith, Sifan, Nick
+### 2021/07/15
+
+---
+
+
+
+
+
+# Motivation
+
+- To find a way to work with the data that does not ignore the locations of the other players.
+
+- Expected Goals 
+
+- Who will win? And other spatial-related questions.
+
+
+
+---
+## [StasbombR Data](https://github.com/statsbomb/StatsBombR)
+<div id="htmlwidget-c6a398525c709db11f47" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-c6a398525c709db11f47">{"x":{"filter":"none","fillContainer":false,"data":[["1","2","3","4","5","6"],["Barcelona","Barcelona","Getafe","Valencia","Barcelona","Barcelona"],["00:02:40.501","00:00:37.890","00:01:39.139","00:48:06.967","00:00:00.229","00:11:44.435"],["Dribble","Foul Committed","Interception","Offside","Pass","Shot"],[66.2,57.2,27.7,86.3,61,93.2],[11.1,66.3,41.8,23.9,40.1,44.4]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>team<\/th>\n      <th>time<\/th>\n      <th>type<\/th>\n      <th>location.x<\/th>\n      <th>location.y<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":6,"columnDefs":[{"className":"dt-right","targets":[4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+
+
+
+####Data provided by [Statsbomb](https://github.com/statsbomb/open-data)
+
+---
+
+## Potential Function
+
+- Idea: The ball is a randomly drifting ball that is attracted to the goal by some "force". 
+
+
+--
+- We can try to model this underlying force based on the movements of the ball
+
+
+--
+- `\(F = MA\)`
+
+
+--
+- `\(F = - \nabla V(x,y)\)`
+
+---
+
+## Our Potential Functions
+
+- Gravity
+$$ V(x,y) = -\frac{G}{\sqrt{x^2 + y^2}} $$
+
+
+--
+- **NOT** "potential of scoring".
+
+.pull-left[
+&lt;img src="./NickPics/graph1.png" width = "450px"/&gt;
+]
+
+.pull-right[
+&lt;img src="./NickPics/graph2.png" width = "450px"/&gt;
+]
+
+---
+## Our Potential Function (For Clarity Purporses)
+
+.pull-left[
+`$$V(x, y) = \frac{g}{\sqrt{\left(x - 15\right)^{2} + \left(y + 40\right)^{2}}} +
+\frac{f}{\sqrt{\left(x - 15\right)^{2} + \left(y - 40\right)^{2}}} - \\
+\frac{e}{\sqrt{\left(x - 45\right)^{2} + \left(y + 40\right)^{2}}} - 
+\frac{d}{\sqrt{\left(x - 45\right)^{2} + \left(y - 40\right)^{2}}} - \\
+\frac{c}{\sqrt{y^{2} + \left(x - 30\right)^{2}}} + \frac{b }{\sqrt{y^{2} + \left(x - 60\right)^{2}}} + \frac{a}{\sqrt{x^{2} + y^{2}}}$$`
+]
+
+---
+## Random Walk
+
+A path that consists of a succession of some random steps on some mathematical space.
+
+- A point moves along the integer line
+
+--
+
+A random walk on the soccer filed
+
+&lt;img src="EDA-Presentation-July15_files/figure-html/unnamed-chunk-2-1.png" width="100%" /&gt;
+
+
+---
+## Random Walk under Harmonic Potential Function
+Using potential function as a guidance for random walk
+
+--
+
+- A step by the random particle under a force.
+`$$r(t_{i+1}) - r(t_i) = - \nabla V(r(t_i)) (t_{t+1} - t_i) + \sigma \sqrt{(t_{i+1} - t_i)} Z_{i+1}$$`
+
+--
+&lt;br&gt;
+
+- Small_Change = Estimated_Velocity x TimeStep + Noise 
+
+
+---
+
+# Estimating the Potential Function from a Trajectory of a Random Walk
+
+The method is from [this paper](https://statistics.berkeley.edu/sites/default/files/tech-reports/723.pdf)
+
+.pull-left[
+- The underlying assumption 1: The potential function can approximated as a linear combination of basis functions
+
+&lt;br&gt;
+
+
+- Underlying assumption 2: The system is overdamped, so force affects the velocity, not acceleration. 
+
+
+]
+
+--
+.pull-right[
+&lt;img src="./NickPics/Soccer_Holes.jpg" width = "450px"/&gt;
+]
+
+---
+
+### Estimating the Potential Function from a Trajectory of a Random Walk (Cont.)
+
+
+
+
+
+- A step by the random particle under a force.
+`$$r(t_{i+1}) - r(t_i) = - \nabla V(r(t_i)) (t_{t+1} - t_i) + \sigma \sqrt{(t_{i+1} - t_i)} Z_{i+1}$$`
+
+--
+&lt;br&gt;
+
+- Small_Change = Estimated_Velocity x TimeStep + Noise 
+
+&lt;br&gt;
+
+With some additional tricks, we can write this as a linear regression problem that can be solved
+via ordinary least squares algorithm (Appendix).
+
+---
+
+# Single Defensive Possession Example
+
+.pull-left[
+&lt;img src="EDA-Presentation-July15_files/figure-html/unnamed-chunk-3-1.png" width="100%" /&gt;
+]
+
+.pull-right[
+&lt;img src="./NickPics/3dPic1.png" width = "450px"/&gt;
+]
+
+---
+
+# Single Defensive Possession Example
+
+
+&lt;img src="./NickPics/SamplesRandomWalk1.png" width = "720px"/&gt;
+
+
+---
+
+# Why not KDE? 
+
+--
+- Kernel Density Estimation is a measure of aggregate locations
+
+&lt;br&gt;
+
+--
+- The Potential Function is estimated from velocities
+  - Estimates impact a hole has on the velocity by a coefficient
+
+---
+
+## Quick 3D + 2D demo on Liverpool WFC
+
+https://cmsac-final-proj.herokuapp.com/
+
+
+---
+
+## Next Steps
+
+- Take the Potential Functions of different teams (Offense and Defense), overlay offense against defense,
+and then do random walks (steps sampled from poisson) to calculate probability of scoring.
+
+&lt;br&gt;
+
+- Detect Formation based on Potential Function Coefficients
+
+&lt;br&gt;
+
+- How the potential functions look for possessions leading to shots, success vs fails
+
+---
+
+### Estimating the Potential Function from a Trajectory of a Random Walk (Appendix)
+
+Assuming 
+`$$r \in R^P$$`
+
+$$\nabla V(r) = \nabla \phi(r_i)^T \beta $$
+
+`$$r(t_{i+1}) - r(t_i) = - \nabla V(r(t_i)) (t_{t+1} - t_i) + \sigma \sqrt{(t_{i+1} - t_i)} Z_{i+1}$$`
+
+`$$y_{i+1} = (r_{i+1} - r_i) / \sqrt{t_{i+1} - t_i}$$`
+
+`$$y_{i+1} = -\nabla \phi (r_i)^T \beta \sqrt{t_{i+1} - t_i} + \sigma Z_{i+1}$$`
+
+
+Stack the `\(y_{i+1}, i=1,...,n\)` to create `\(Y_n\)` of vector size np x 1
+
+
+Then stack `\(X_i = \nabla \phi(r_i)^T \sqrt{t_{i+1} - t_i}\)` to create a matrix of np by L where L
+is the number of basis functions.
+
+
+Then we get the regression model:
+
+`\(Y_n = X_n \beta + \epsilon_n\)`
+
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
