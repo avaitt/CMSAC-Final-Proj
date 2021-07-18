@@ -13,6 +13,7 @@ import dash_bootstrap_components as dbc
 
 import skimage.io as sio
 from skimage.transform import rescale, resize, downscale_local_mean
+from skimage.filters import unsharp_mask
 
 image = sio.imread("soccer_fieldv3.jpeg")
 img = image[:, :, 1]
@@ -20,6 +21,7 @@ t2 = img[:, int(img.shape[1] / 2):]
 
 image_rescaled = rescale(t2, 0.25, anti_aliasing=False)
 image_resized = resize(image_rescaled, (92, 84), anti_aliasing=True)
+image_final = unsharp_mask(image_resized, radius=30, amount=1)
 
 liverpool_def = pd.read_csv('Coefficients_Liverpool_Defense.csv')
 liverpool_off = pd.read_csv('Coefficients_Liverpool_Offense.csv')
@@ -78,7 +80,7 @@ layout2 = go.Layout(
     width=550,height=500)
 
 camera = dict(
-    eye=dict(x=1.75, y=1, z=0.4)
+    eye=dict(x=1.75, y=1, z=0.5)
 )
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUMEN])
@@ -108,7 +110,7 @@ app.layout = html.Div(children=[
                             min=0,
                             max=90,
                             step=1,
-                            value=5),
+                            value=45),
                         html.Div(id='slider-drag-output',
                                  style={'margin-top': -20, 'margin-left': 26, 'padding-right': '140px'})
                         ]),
@@ -141,7 +143,7 @@ app.layout = html.Div(children=[
                             min=0,
                             max=90,
                             step=1,
-                            value=5),
+                            value=45),
                         html.Div(id='slider-drag-output2',
                                  style={'margin-top': -20, 'margin-left': 26, 'padding-right': '140px'})
                         ]),
@@ -208,12 +210,19 @@ def display_value(value):
     [State(component_id='minutes_def', component_property='value')],
     prevent_initial_call=False
 )
+
+# @app.callback(
+#     Output(component_id='3D-graph', component_property='figure'),
+#     Input(component_id='minutes_def', component_property='value'),
+#     [State(component_id='minutes_def', component_property='value')]
+# )
+
 def update_3d(n_clicks, minutes_def):
     with np.errstate(divide='ignore', invalid='ignore'):
         fig = go.Figure(
             data=[go.Surface(z=z, x=x, y=y, colorscale='blues', surfacecolor=np.zeros(90 * 80).reshape(90, 80)),
                   go.Surface(x=x, y=y, z=np.zeros(7200).reshape(90, 80),
-                             surfacecolor=image_resized, colorscale='BuGn_r')],
+                             surfacecolor=image_final, colorscale='BuGn_r')],
             layout=layout)
 
         row = liverpool_def.iloc[minutes_def]
@@ -252,11 +261,17 @@ def update_3d(n_clicks, minutes_def):
     [State(component_id='minutes_def', component_property='value')],
     prevent_initial_call=False
 )
+
+# @app.callback(
+#     Output(component_id='2D-graph', component_property='figure'),
+#     Input(component_id='minutes_def', component_property='value'),
+#     [State(component_id='minutes_def', component_property='value')]
+# )
 def update_2d(n_clicks, minutes_def):
     with np.errstate(divide='ignore', invalid='ignore'):
         fig2 = go.Figure(
             data=[
-                go.Contour(z=z, showscale=True, connectgaps=True)],
+                go.Contour(x=x,y=y,z=z, showscale=True, connectgaps=True)],
             layout=layout2)
 
         row = liverpool_def.iloc[minutes_def]
@@ -294,9 +309,9 @@ def update_2d(n_clicks, minutes_def):
 def update_3d2(n_clicks, minutes_def2):
     with np.errstate(divide='ignore', invalid='ignore'):
         fig = go.Figure(
-            data=[go.Surface(z=z, x=x, y=y, colorscale='blues', surfacecolor=np.zeros(90 * 80).reshape(90, 80)),
+            data=[go.Surface(z=z, x=x, y=y, colorscale='reds', surfacecolor=np.zeros(90 * 80).reshape(90, 80)),
                   go.Surface(x=x, y=y, z=np.zeros(7200).reshape(90, 80),
-                             surfacecolor=image_resized, colorscale='BuGn_r')],
+                             surfacecolor=image_final, colorscale='BuGn_r')],
             layout=layout)
 
         row = liverpool_off.iloc[minutes_def2]
@@ -339,7 +354,7 @@ def update_2d2(n_clicks, minutes_def2):
     with np.errstate(divide='ignore', invalid='ignore'):
         fig2 = go.Figure(
             data=[
-                go.Contour(z=z, showscale=True, connectgaps=True)],
+                go.Contour(x=x,y=y,z=z, showscale=True, connectgaps=True)],
             layout=layout2)
 
         row = liverpool_off.iloc[minutes_def2]
