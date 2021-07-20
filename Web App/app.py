@@ -4,13 +4,18 @@ import dash_html_components as html
 import plotly.express as px
 import pandas as pd
 import numpy as np
-
+import plotly.io as pio
+import plotly
+import plotly.express as px
+import helper.plotly as py_help
+import json
+import pickle
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from dash.dependencies import Input, Output, State
 
 import dash_bootstrap_components as dbc
-
+from dash.exceptions import PreventUpdate
 import skimage.io as sio
 from skimage.transform import rescale, resize, downscale_local_mean
 from skimage.filters import unsharp_mask
@@ -91,12 +96,11 @@ app.layout = html.Div(children=[
     # All elements from the top of the page
     html.Div([
         html.Div([
-            dcc.Loading(id="loading-1",
-                        children=[dcc.Graph(id='3D-graph', figure={})]),
+            dcc.Graph(id='3D-graph', figure={})
+            # html.Iframe(src=app.get_asset_url("test2.html"), width=600, height=400)
         ], className='four columns'),
         html.Div([
-            dcc.Loading(id="loading-2",
-                        children=[dcc.Graph(id='2D-graph', figure={})]),
+            dcc.Graph(id='2D-graph', figure={})
         ], className='four columns'),
         html.Div([
             html.Br(),
@@ -105,31 +109,41 @@ app.layout = html.Div(children=[
             html.Br(),
             html.Label([html.Strong('Minutes: '),
                         # dcc.Input(id='a', type='number', step=0.1, value=0.5),
+                        dcc.Interval(
+                                id='interval',
+                                interval=1400,
+                                n_intervals=0,
+                                max_intervals=90,
+                                disabled=True
+                            ),
                         dcc.Slider(
                             id='minutes_def',
                             min=0,
                             max=90,
                             step=1,
-                            value=45),
+                            value=0),
                         html.Div(id='slider-drag-output',
-                                 style={'margin-top': -20, 'margin-left': 26, 'padding-right': '140px'})
+                                 style={'margin-top': -20, 'margin-left': 26, 'padding-right': '140px'}),
+                        html.Br(),
+                        #html.Button('Play', id='my_btn')]),
+                        html.Label(
+                            dbc.Button(id='my_btn', n_clicks=0, children="Play", color="primary"),
+                            style={'font-weight': 'bold','margin-left': 3}),
                         ]),
             html.Br(),
-            html.Br(),
-            html.Label(
-                dbc.Button(id='my_button', n_clicks=0, children="Submit", color="success"),
-                style={'font-weight': 'bold'}),
             html.Br()
+            # html.Label(
+            #     dbc.Button(id='my_button', n_clicks=0, children="Submit", color="success"),
+            #     style={'font-weight': 'bold'}),
+            # html.Br()
         ], className='four columns'),
     ], className='row'),
     html.Div([
         html.Div([
-            dcc.Loading(id="loading-3",
-                        children=[dcc.Graph(id='3D-graph2', figure={})]),
+            dcc.Graph(id='3D-graph2', figure={})
         ], className='four columns'),
         html.Div([
-            dcc.Loading(id="loading-4",
-                        children=[dcc.Graph(id='2D-graph2', figure={})]),
+            dcc.Graph(id='2D-graph2', figure={})
         ], className='four columns'),
         html.Div([
             html.Br(),
@@ -138,21 +152,33 @@ app.layout = html.Div(children=[
             html.Br(),
             html.Label([html.Strong('Minutes: '),
                         # dcc.Input(id='a', type='number', step=0.1, value=0.5),
+                        dcc.Interval(
+                                id='interval2',
+                                interval=1400,
+                                n_intervals=0,
+                                max_intervals=90,
+                                disabled=True
+                            ),
                         dcc.Slider(
                             id='minutes_def2',
                             min=0,
                             max=90,
                             step=1,
-                            value=45),
+                            value=0),
                         html.Div(id='slider-drag-output2',
-                                 style={'margin-top': -20, 'margin-left': 26, 'padding-right': '140px'})
+                                 style={'margin-top': -20, 'margin-left': 26, 'padding-right': '140px'}),
+                        html.Br(),
+                        #html.Button('Play', id='my_btn2')]),
+                        html.Label(
+                            dbc.Button(id='my_btn2', n_clicks=0, children="Play", color="primary"),
+                            style={'font-weight': 'bold','margin-left': 3}),
                         ]),
             html.Br(),
-            html.Br(),
-            html.Label(
-                dbc.Button(id='my_button2', n_clicks=0, children="Submit", color="success"),
-                style={'font-weight': 'bold'}),
             html.Br()
+            # html.Label(
+            #     dbc.Button(id='my_button2', n_clicks=0, children="Submit", color="success"),
+            #     style={'font-weight': 'bold'}),
+            # html.Br()
         ], className='four columns'),
     ], className='row'),
 
@@ -193,32 +219,84 @@ app.layout = html.Div(children=[
 #         ], align="start", no_gutters=True)
 #     ])
 
+@app.callback([Output('interval', 'disabled'), Output('my_btn', 'children')],
+              [Input('my_btn', 'n_clicks')],
+              [State('interval', 'disabled')])
+def display_value(click, value):
+    # print('click', value)
+    if click:
+        new_value = not value
+        btn_name = 'Play' if new_value else 'Pause'
+        return new_value, btn_name
+
+    else:
+        raise PreventUpdate
+
+@app.callback(Output('minutes_def', 'value'),
+              [Input('interval', 'n_intervals')])
+def update_slider(num):
+    return num
 
 @app.callback(Output('slider-drag-output', 'children'),
               [Input('minutes_def', 'value')])
-def display_value(value):
+def display_val(value):
     return 'Timestep: {} minutes'.format(value)
+
+
+##################################################################################
+
+@app.callback([Output('interval2', 'disabled'), Output('my_btn2', 'children')],
+              [Input('my_btn2', 'n_clicks')],
+              [State('interval2', 'disabled')])
+def display_value2(click, value):
+    # print('click', value)
+    if click:
+        new_value = not value
+        btn_name = 'Play' if new_value else 'Pause'
+        return new_value, btn_name
+
+    else:
+        raise PreventUpdate
+
+@app.callback(Output('minutes_def2', 'value'),
+              [Input('interval2', 'n_intervals')])
+def update_slider2(num):
+    return num
 
 @app.callback(Output('slider-drag-output2', 'children'),
               [Input('minutes_def2', 'value')])
-def display_value(value):
+def display_val2(value):
     return 'Timestep: {} minutes'.format(value)
-
-@app.callback(
-    Output(component_id='3D-graph', component_property='figure'),
-    Input(component_id='my_button', component_property='n_clicks'),
-    [State(component_id='minutes_def', component_property='value')],
-    prevent_initial_call=False
-)
 
 # @app.callback(
 #     Output(component_id='3D-graph', component_property='figure'),
-#     Input(component_id='minutes_def', component_property='value'),
-#     [State(component_id='minutes_def', component_property='value')]
+#     Input(component_id='my_button', component_property='n_clicks'),
+#     [State(component_id='minutes_def', component_property='value')],
+#     prevent_initial_call=False
 # )
+
+
+@app.callback(
+    Output(component_id='3D-graph', component_property='figure'),
+    Input(component_id='minutes_def', component_property='value'),
+    [State(component_id='minutes_def', component_property='value')]
+)
 
 def update_3d(n_clicks, minutes_def):
     with np.errstate(divide='ignore', invalid='ignore'):
+
+    # return html.Iframe(src=app.get_asset_url("test2.html"))
+    #
+    #     test_df = pd.read_csv('test_df.csv')
+    #     with np.errstate(divide='ignore'):
+    #         animation = py_help.create_event_animation(test_df,
+    #                                                    total_seconds=20,
+    #                                                    fps=1,
+    #                                                    x_col_bef="posBeforeXMeters",
+    #                                                    x_col_aft="posAfterXMeters",
+    #                                                    y_col_bef="posBeforeYMeters",
+    #                                                    y_col_aft="posAfterYMeters")
+    #         return animation
         fig = go.Figure(
             data=[go.Surface(z=z, x=x, y=y, colorscale='blues', surfacecolor=np.zeros(90 * 80).reshape(90, 80)),
                   go.Surface(x=x, y=y, z=np.zeros(7200).reshape(90, 80),
@@ -255,18 +333,18 @@ def update_3d(n_clicks, minutes_def):
         return fig
 
 
-@app.callback(
-    Output(component_id='2D-graph', component_property='figure'),
-    Input(component_id='my_button', component_property='n_clicks'),
-    [State(component_id='minutes_def', component_property='value')],
-    prevent_initial_call=False
-)
-
 # @app.callback(
 #     Output(component_id='2D-graph', component_property='figure'),
-#     Input(component_id='minutes_def', component_property='value'),
-#     [State(component_id='minutes_def', component_property='value')]
+#     Input(component_id='my_button', component_property='n_clicks'),
+#     [State(component_id='minutes_def', component_property='value')],
+#     prevent_initial_call=False
 # )
+
+@app.callback(
+    Output(component_id='2D-graph', component_property='figure'),
+    Input(component_id='minutes_def', component_property='value'),
+    [State(component_id='minutes_def', component_property='value')]
+)
 def update_2d(n_clicks, minutes_def):
     with np.errstate(divide='ignore', invalid='ignore'):
         fig2 = go.Figure(
@@ -286,26 +364,41 @@ def update_2d(n_clicks, minutes_def):
 
         A = a + b + c + d + e + f + g
 
+        largest = np.nanmax(A[A != np.inf])
+        smallest = np.nanmin(A[A != -np.inf])
+
+        #     A[A > largest] = largest
+        #     A[A < smallest] = smallest
+        A[A == largest] = 100
+        A[A == smallest] = -100
         A[A > 100] = 100
         A[A < -100] = -100
+        #
+        # A[A > 100] = 100
+        # A[A < -100] = -100
 
         #fig2.update_layout(margin=dict(b=0, t=0))
 
         fig2.update_layout(title='Liverpool [F.C. Women] Defensive (2D Contour)')
-
-
 
         fig2.data[0].z = A
 
         return fig2
 
 
+# @app.callback(
+#     Output(component_id='3D-graph2', component_property='figure'),
+#     Input(component_id='my_button2', component_property='n_clicks'),
+#     [State(component_id='minutes_def2', component_property='value')],
+#     prevent_initial_call=False
+# )
+
 @app.callback(
     Output(component_id='3D-graph2', component_property='figure'),
-    Input(component_id='my_button2', component_property='n_clicks'),
-    [State(component_id='minutes_def2', component_property='value')],
-    prevent_initial_call=False
+    Input(component_id='minutes_def2', component_property='value'),
+    [State(component_id='minutes_def2', component_property='value')]
 )
+
 def update_3d2(n_clicks, minutes_def2):
     with np.errstate(divide='ignore', invalid='ignore'):
         fig = go.Figure(
@@ -344,12 +437,19 @@ def update_3d2(n_clicks, minutes_def2):
         return fig
 
 
+# @app.callback(
+#     Output(component_id='2D-graph2', component_property='figure'),
+#     Input(component_id='my_button2', component_property='n_clicks'),
+#     [State(component_id='minutes_def2', component_property='value')],
+#     prevent_initial_call=False
+# )
+
 @app.callback(
     Output(component_id='2D-graph2', component_property='figure'),
-    Input(component_id='my_button2', component_property='n_clicks'),
-    [State(component_id='minutes_def2', component_property='value')],
-    prevent_initial_call=False
+    Input(component_id='minutes_def2', component_property='value'),
+    [State(component_id='minutes_def2', component_property='value')]
 )
+
 def update_2d2(n_clicks, minutes_def2):
     with np.errstate(divide='ignore', invalid='ignore'):
         fig2 = go.Figure(
@@ -369,6 +469,13 @@ def update_2d2(n_clicks, minutes_def2):
 
         A = a + b + c + d + e + f + g
 
+        largest = np.nanmax(A[A != np.inf])
+        smallest = np.nanmin(A[A != -np.inf])
+
+        #     A[A > largest] = largest
+        #     A[A < smallest] = smallest
+        A[A == largest] = 100
+        A[A == smallest] = -100
         A[A > 100] = 100
         A[A < -100] = -100
 
