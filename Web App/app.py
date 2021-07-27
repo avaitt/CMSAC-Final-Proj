@@ -7,7 +7,6 @@ import numpy as np
 import plotly.io as pio
 import plotly
 import plotly.express as px
-import helper.plotly as py_help
 import json
 import pickle
 import plotly.graph_objects as go
@@ -479,9 +478,7 @@ def update_2d2(n_clicks, minutes_def2):
         A[A > 100] = 100
         A[A < -100] = -100
 
-        #fig2.update_layout(margin=dict(b=0, t=0))
         fig2.update_layout(title='Liverpool [F.C. Women] Offensive (2D Contour)')
-
 
         fig2.data[0].z = A
 
