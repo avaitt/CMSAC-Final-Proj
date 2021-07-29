@@ -44,12 +44,14 @@ sifan_predata <- readRDS("data/sifan_predata")
 <!-- Nick -->
 ## Introduction / Motivation
 
+- Model ball movement mynamics with tracking data of only the ball (and not other players)
 
 - To encapsulate the complex movement and forces acting on the ball into a much simpler, useful object
 
+- A potential function is just an equation that model underlying forces
+
 - Use this to approximate final game outcomes
 
-- $ $ $
 
 
 ---
@@ -83,6 +85,9 @@ A sequence of some steps in random directions on some mathematical space.
 
 - Idea: The ball is a randomly drifting ball that is attracted to the goal by some "force". 
 --
+
+- A placed in this vector field ball will move along the arrows of the vector field
+
 <br>
 
 <center>![](https://cdn.kastatic.org/googleusercontent/wBalF7MINVVbEksIOvIBlO6RupAqyg5yY7nkoZ5p3bPTBCGjkrWAyTQtspKaMm9BIWRlMKj089R3R15hBDI5yFY)
@@ -156,10 +161,8 @@ $$Force = -\nabla V(x,y) = -\nabla \phi(x,y)^T \beta$$
 
 --
 $$Velocity \sim Force$$
-<br>
 --
 $$\frac{dr}{dt} = - \nabla V(x,y)$$
-In essence, the fitting the potential is just two simple linear regression models.
 
 
 
