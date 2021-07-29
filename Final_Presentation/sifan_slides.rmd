@@ -1,0 +1,111 @@
+---
+title: "Potential Functions and Soccer"
+author: "Adhvaith, Sifan, Nick"
+date: "2021/07/15"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    nature:
+      slideNumberFormat: "%current%"
+      highlightStyle: github
+      highlightLines: true
+      ratio: 16:9
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+
+
+knitr::opts_chunk$set(
+  fig.width=9, fig.height=3.5, fig.retina=3,
+  out.width = "100%",
+  cache = FALSE,
+  echo = TRUE,
+  message = FALSE, 
+  warning = FALSE,
+  fig.show = TRUE,
+  hiline = TRUE
+)
+library(tidyverse)
+library(SBpitch)
+
+predata <- readRDS("final project/sifan_pre_data/predata")
+rw = readRDS("final project/random walk")
+rwf = readRDS("final project/rw")
+```
+
+
+---
+## [StasbombR Data](https://github.com/statsbomb/StatsBombR)
+```{r, echo=F}
+DT::datatable(head(predata), fillContainer = FALSE, options = list(pageLength = 6))
+```
+
+
+
+####Data provided by [Statsbomb](https://github.com/statsbomb/open-data)
+
+
+---
+## Random Walk
+
+A sequence of some steps in random directions on some mathematical space.
+
+- A point randomly moves along the integer line
+
+- A point randomly moves on x-y plane
+
+--
+
+A random walk on the soccer filed
+
+```{r, echo=F, warning=F, message=F}
+rw
+```
+
+
+
+---
+
+## Potential Function
+
+- Idea: The ball is a randomly drifting ball that is attracted to the goal by some "force". 
+--
+<br>
+
+<center>![](https://cdn.kastatic.org/googleusercontent/wBalF7MINVVbEksIOvIBlO6RupAqyg5yY7nkoZ5p3bPTBCGjkrWAyTQtspKaMm9BIWRlMKj089R3R15hBDI5yFY)
+
+<br>
+.footnote[]
+
+---
+## Potential Function
+- We can try to model this underlying force based on the movements of the ball
+
+--
+
+- Our Potential Functions
+  - Gravity
+
+$$ V(x,y) = -\frac{G}{\sqrt{x^2 + y^2}} $$
+
+
+
+
+---
+## Random Walk under Harmonic Potential Function
+Using potential function as a guidance for random walk
+
+--
+
+- A step by the random particle under a force.
+$$r(t_{i+1}) - r(t_i) = - \nabla V(r(t_i)) (t_{t+1} - t_i) + \sigma \sqrt{(t_{i+1} - t_i)} Z_{i+1}$$
+
+--
+<br>
+
+- Small_Change = Estimated_Velocity x TimeStep + Noise 
+
+
+---

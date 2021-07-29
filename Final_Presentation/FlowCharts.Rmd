@@ -1,0 +1,72 @@
+---
+title: "FlowCharts"
+author: "me"
+date: "7/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+# install.packages("DiagrammeR")
+library("DiagrammeR")
+```
+
+
+
+```{r}
+
+DiagrammeR::grViz("digraph {
+
+graph [layout = dot, rankdir = TB]
+
+# define the global styles of the nodes. We can override these in box if we wish
+node [shape = rectangle, style = filled, fillcolor = Linen]
+
+StatBomb [label = 'StatBombR', shape = folder, fillcolor = Beige]
+data1 [label = 'Teams Offensive \n Trajectories', shape = folder, fillcolor = Beige]
+data2 [label = 'Teams Defensive \n Trajectories', shape = folder, fillcolor = Beige]
+fit_function [label =  'Fit Potential \n Function Model']
+off_coef [label = 'Teams Offensive \n Coefficients', shape = folder, fillcolor = Beige]
+def_coef [label = 'Teams Defensive \n Coefficients', shape = folder, fillcolor = Beige]
+
+# edge definitions with the node IDs
+StatBomb -> {data1 data2}  -> fit_function -> {off_coef, def_coef}
+}")
+
+```
+
+
+```{r}
+
+DiagrammeR::grViz("digraph {
+
+graph [layout = dot, rankdir = LR]
+
+# define the global styles of the nodes. We can override these in box if we wish
+node [shape = rectangle, style = filled, fillcolor = Linen]
+
+StatBomb [label = 'StatBombR match \n data', shape = folder, fillcolor = Beige]
+OverlayCoef [label =  'Overlay \n Coefficients']
+SimGame [label =  'Simulate Game \n Model']
+Game_Avg_Pred [label =  'Averaged Score \n Prediction']
+
+
+off_coef [label = 'Teams Offensive \n Coefficients', shape = folder, fillcolor = Beige]
+def_coef [label = 'Teams Defensive \n Coefficient', shape = folder, fillcolor = Beige]
+
+# edge definitions with the node IDs
+{off_coef, def_coef,StatBomb }  -> OverlayCoef -> SimGame -> SimGame -> Game_Avg_Pred
+}")
+
+```
+
+
+
+
+
+
+

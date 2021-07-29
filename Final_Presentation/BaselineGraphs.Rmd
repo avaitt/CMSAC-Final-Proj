@@ -1,0 +1,99 @@
+---
+title: "Baseline_Comparisons"
+author: "me"
+date: "7/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## This is the baseline Comparison graphs
+
+## Our Baseline Comparison
+
+```{r}
+
+all_scores <- readRDS("all_scores.rds")
+
+all_scores %>% 
+  group_by(match_id) %>% 
+  summarize(pred_score_diff = mean(pred_score_diff), true_score_diff = mean(actual_score_diff)) %>% 
+  mutate(residue = true_score_diff - pred_score_diff) %>% 
+  ggplot() +
+  geom_point(aes(y=true_score_diff, x=pred_score_diff), alpha = 0.7) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") + 
+  labs(title = "Potential Model Captures higher score differentials well \n and has slightly lower error than poisson") + 
+  scale_y_continuous(breaks = seq(-5, 5,
+                                  by = 1)) +
+    scale_x_continuous(breaks = seq(-10, 10,
+                                  by = 1))  +
+  geom_hline(yintercept=0, linetype="solid", color = "blue") +
+  geom_vline(xintercept=0,  linetype="solid", color = "blue") +
+  coord_fixed(x = c(-5, 5), y = c(-5,5)) +
+  xlab("Predicted Score Differential") + ylab("True Score Differential")
+
+
+```
+
+
+## Poisson Baseline Comparison
+
+```{r}
+
+poisson_baseline <- readRDS("poisson_scores.rds")
+
+poisson_baseline %>% 
+  mutate(pred_score_diff = (home_pred - away_pred), actual_score_diff = (home_actual_score - away_actual_score))  %>% 
+  group_by(match_id) %>% 
+  summarize(pred_score_diff = mean(pred_score_diff), true_score_diff = mean(actual_score_diff)) %>% 
+  mutate(residue = true_score_diff - pred_score_diff) %>% 
+  ggplot() +s
+  geom_point(aes(y=true_score_diff, x=pred_score_diff), alpha = 0.3) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") + 
+  labs(title = "Poisson Baseline can predict larger differentials but has error") + 
+  scale_y_continuous(breaks = seq(-5, 5,
+                                  by = 1)) +
+    scale_x_continuous(breaks = seq(-10, 10,
+                                  by = 1))  +
+  geom_hline(yintercept=0, linetype="solid", color = "blue") +
+  geom_vline(xintercept=0,  linetype="solid", color = "blue") +
+  coord_fixed(x = c(-5, 5), y = c(-5,5)) +
+  xlab("Predicted Score Differential") + ylab("True Score Differential")
+
+
+```
+
+## Averaged Baseline Comparison
+
+```{r}
+
+mean_baseline <- readRDS("mean_baseline.rds")
+
+mean_baseline %>% 
+  mutate(pred_score_diff = (baseline_home - baseline_away), actual_score_diff = (home_actual_score - away_actual_score))  %>% 
+  group_by(match_id) %>% 
+  summarize(pred_score_diff = mean(pred_score_diff), true_score_diff = mean(actual_score_diff)) %>% 
+  mutate(residue = true_score_diff - pred_score_diff) %>% 
+  ggplot() +
+  geom_point(aes(y=true_score_diff, x=pred_score_diff), alpha = 0.7) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") + 
+  labs(title = "Average Score Baseline fails to capture higher score differentials") + 
+  scale_y_continuous(breaks = seq(-5, 5,
+                                  by = 1)) +
+    scale_x_continuous(breaks = seq(-10, 10,
+                                  by = 1))  +
+  geom_hline(yintercept=0, linetype="solid", color = "blue") +
+  geom_vline(xintercept=0,  linetype="solid", color = "blue") +
+  coord_fixed(x = c(-5, 5), y = c(-5,5)) +
+  xlab("Predicted Score Differential") + ylab("True Score Differential")
+
+```
+
+
+
+
+
+
+
